@@ -1,0 +1,13 @@
+#sig {
+    border: solid 5px black;
+    width: 500px;
+    height: 500px;
+}
+
+#canvas {
+    display: block;
+    cursor: cell;
+    border: black 1px solid;
+    width: 700px;
+    height: 300px;
+}
