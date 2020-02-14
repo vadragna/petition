@@ -5,10 +5,14 @@
         <title>petition</title>
     </head>
     <body>
-        <h1>Thanks!!</h1>
+        <h1>Thanks for having signed up out petition!!</h1>
+        <form method ="POST">
+             <input type="hidden" name="_csrf" value="{{csrfToken}}">
+            <button id="submit" type="submit">See who has signed so far</button>
+        </form>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <script type="text/javascript" src="script.js">
-
+        <script type="text/javascript" src="thanks.js">
+<form method ="POST"> <button id="submit" type="submit">back</button></form>
         </script>
     </body>
 </html>

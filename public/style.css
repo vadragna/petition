@@ -8,6 +8,9 @@
     display: block;
     cursor: cell;
     border: black 1px solid;
-    width: 700px;
-    height: 200px;
+}
+
+ul {
+    list-style: none;
+    font-family: "Sriracha", cursive;
 }
