@@ -24,6 +24,8 @@ canvas.on("mousedown", event => {
 });
 
 $("#submit").on("click", () => {
+    console.log("clicked");
+    console.log('$("#message").html()', $("#message").html());
     var sig = $("input#sig").html();
     if (sig != "") {
         var sigCode = $("input[name='sig']").val(canvas[0].toDataURL());
@@ -31,5 +33,11 @@ $("#submit").on("click", () => {
         var last = sigCode[0].value;
         console.log(sig, "sig", "first", first, "last", last);
         console.log("clicked on submit button");
+    } else {
+        if ($("#message").html().length == 0) {
+            $("#message").append(
+                "<h5>You must sign to send your subscription!</h5>"
+            );
+        }
     }
 });
