@@ -40,6 +40,10 @@ exports.getPassword = function(password, email) {
     return db.query(`SELECT password FROM users WHERE email='${email}'`);
 };
 
+exports.getUserId = function(email) {
+    return db.query(`SELECT id FROM users WHERE email='${email}'`);
+};
+
 // WHERE email=${email}
 // DROP TABLE IF EXISTS signatures;
 //

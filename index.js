@@ -7,6 +7,7 @@ var { getSigners } = require("./db.js");
 var { addUser } = require("./db.js");
 var { getEmail } = require("./db.js");
 var { getPassword } = require("./db.js");
+var { getUserId } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
 const cookieSession = require("cookie-session");
@@ -49,12 +50,6 @@ app.get("/petition", (req, res) => {
     if (req.session.sigId) {
         res.redirect("/thanks");
     } else {
-        // if (req) {
-        //     res.redirect("/thanks");
-        // }
-        // let first = req.body.first;
-        // let last = req.body.last;
-        // let sig = req.body.sig;
         // console.log("first, last, sig", first, last, sig);
         // db.addDetails(firstname, lastname, sig).then(response =>
         // req.session.sigId = response.rows[0].id)
@@ -126,6 +121,19 @@ app.post("/login", (req, res) => {
                             results.rows[0].password
                         ).then(matchValue => {
                             console.log("match value: ", matchValue);
+                            if (matchValue == true) {
+                                getUserId(req.body.email).then(results => {
+                                    let userId = results.rows[0].id;
+                                    req.session.userId = userId;
+                                    console.log(
+                                        "req.session.userId",
+                                        req.session.userId
+                                    );
+                                });
+                                res.redirect("/petition");
+                            } else {
+                                console.log("NO WAY!!");
+                            }
                         });
                         // if (compare(hashedPw, results.rows[0].password)) {
                         //     console.log("you can log in!");
@@ -134,12 +142,12 @@ app.post("/login", (req, res) => {
                         // }
                     });
                 });
-            } else {
-                console.log("no existing mail in db");
             }
         })
-        .catch(err => console.log("err in post loging", err));
-    res.redirect("/petition");
+        .catch(err => {
+            console.log("no existing mail in db");
+            res.redirect("/login");
+        });
 });
 
 app.get("/thanks", (req, res) => {
