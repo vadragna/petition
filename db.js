@@ -22,6 +22,14 @@ exports.getSigners = function() {
     return db.query("SELECT first, last FROM signatures");
 };
 
+exports.addUser = function(first, last, email, password) {
+    return db.query(
+        `INSERT INTO users (first, last, email, password)
+VALUES ($1, $2, $3, $4)`,
+        [first, last, email, password]
+    );
+};
+
 // DROP TABLE IF EXISTS signatures;
 //
 // CREATE TABLE signatures (

@@ -4,6 +4,8 @@ const bodyParser = require("body-parser");
 const db = require("./db.js");
 var { addSigner } = require("./db.js");
 var { getSigners } = require("./db.js");
+var { addUser } = require("./db.js");
+const { hash, compare } = require("./utils/bc.js");
 
 const cookieSession = require("cookie-session");
 const csurf = require("csurf");
@@ -59,6 +61,44 @@ app.get("/petition", (req, res) => {
             layout: "main"
         });
     }
+});
+
+app.get("/register", (req, res) => {
+    res.render("registration", {
+        layout: "main"
+    });
+});
+
+app.post("/register", (req, res) => {
+    //grap user's password req.body.password(dipende dal node dell'input field)
+    //hash user PW and store to database
+
+    addUser(req.body.first, req.body.second, req.body.email, req.body.password)
+        .then(results => {
+            let users = results;
+            console.log("let users (results)", users);
+            res.redirect("petition");
+        })
+        .catch(err => console.log("err in registration", err));
+    hash(req.body.password).then(hashedPw => {
+        console.log("hashed PW from /register", hashedPw);
+        //store in in the bd table
+        //redirect to somewhere else (first page)
+    });
+});
+
+app.get("/login", (req, res) => {
+    res.render("login", {
+        layout: "main"
+    });
+    //compare two arguments hashed PW retrived from database and the typed in password.
+    //if they match returns true otherwise false. The e-mail will be the id (in WHERE statement)
+    const hashFromDb = "test"; //questo deve essere preso dal bd
+    compare("userInput", hashFromDb).then(matchValue => {
+        console.log("matchValue of compare: ", matchValue);
+    });
+    //if the match redirect to petition, set somthing in req.session.userId, if they do not match,
+    //trigger or send error message
 });
 
 app.get("/thanks", (req, res) => {
