@@ -9,11 +9,13 @@ console.log("db", db);
 
 app.use(express.static("./static"));
 
-exports.addSigner = function(first, last, sig) {
+exports.addSigner = function(sig, id) {
+    let userId = db.query("SELECT id FROM users");
+    console.log("userId", userId);
     return db.query(
-        `INSERT INTO signatures (first, last, sig)
-    VALUES ($1, $2, $3) returning id`,
-        [first, last, sig]
+        `INSERT INTO signatures (signature, user_id)
+    VALUES ($1, $2) returning user_id`,
+        [sig, id]
     );
 };
 
@@ -30,6 +32,15 @@ VALUES ($1, $2, $3, $4)`,
     );
 };
 
+exports.getEmail = function(email) {
+    return db.query(`SELECT email FROM users WHERE email='${email}'`);
+};
+
+exports.getPassword = function(password, email) {
+    return db.query(`SELECT password FROM users WHERE email='${email}'`);
+};
+
+// WHERE email=${email}
 // DROP TABLE IF EXISTS signatures;
 //
 // CREATE TABLE signatures (

@@ -5,6 +5,8 @@ const db = require("./db.js");
 var { addSigner } = require("./db.js");
 var { getSigners } = require("./db.js");
 var { addUser } = require("./db.js");
+var { getEmail } = require("./db.js");
+var { getPassword } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
 const cookieSession = require("cookie-session");
@@ -72,19 +74,22 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
     //grap user's password req.body.password(dipende dal node dell'input field)
     //hash user PW and store to database
-
-    addUser(req.body.first, req.body.second, req.body.email, req.body.password)
-        .then(results => {
-            let users = results;
-            console.log("let users (results)", users);
-            res.redirect("petition");
+    hash(req.body.password)
+        .then(hash => {
+            addUser(req.body.first, req.body.second, req.body.email, hash).then(
+                results => {
+                    let users = results;
+                    console.log("let users (results)", users);
+                    res.redirect("petition");
+                }
+            );
         })
         .catch(err => console.log("err in registration", err));
-    hash(req.body.password).then(hashedPw => {
-        console.log("hashed PW from /register", hashedPw);
-        //store in in the bd table
-        //redirect to somewhere else (first page)
-    });
+    console.log("user input password", req.body.password);
+    // hash(req.body.password).then(hashedPw => {
+    //     console.log("hashed PW from /register", hashedPw);
+    //store in in the bd table
+    //redirect to somewhere else (first page)
 });
 
 app.get("/login", (req, res) => {
@@ -93,12 +98,48 @@ app.get("/login", (req, res) => {
     });
     //compare two arguments hashed PW retrived from database and the typed in password.
     //if they match returns true otherwise false. The e-mail will be the id (in WHERE statement)
-    const hashFromDb = "test"; //questo deve essere preso dal bd
-    compare("userInput", hashFromDb).then(matchValue => {
-        console.log("matchValue of compare: ", matchValue);
-    });
+    // const hashFromDb = "test"; //questo deve essere preso dal bd
+    // compare("userInput", hashFromDb).then(matchValue => {
+    //     console.log("matchValue of compare: ", matchValue);
+    // });
     //if the match redirect to petition, set somthing in req.session.userId, if they do not match,
     //trigger or send error message
+});
+
+app.post("/login", (req, res) => {
+    console.log("req.body.email", req.body.email);
+    getEmail(req.body.email)
+        .then(results => {
+            if (results.rows[0].email == req.body.email) {
+                // compare(req.body.password, )
+                console.log("existing mail in db");
+                getPassword(req.body.password, req.body.email).then(results => {
+                    hash(req.body.password).then(hashedPw => {
+                        console.log(
+                            "hashedPw",
+                            hashedPw,
+                            "results.rows[0].password",
+                            results.rows[0].password
+                        );
+                        compare(
+                            req.body.password,
+                            results.rows[0].password
+                        ).then(matchValue => {
+                            console.log("match value: ", matchValue);
+                        });
+                        // if (compare(hashedPw, results.rows[0].password)) {
+                        //     console.log("you can log in!");
+                        // } else {
+                        //     console.log("no way");
+                        // }
+                    });
+                });
+            } else {
+                console.log("no existing mail in db");
+            }
+        })
+        .catch(err => console.log("err in post loging", err));
+    res.redirect("/petition");
 });
 
 app.get("/thanks", (req, res) => {
@@ -123,7 +164,7 @@ app.post("/thanks", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
-    addSigner(req.body.first, req.body.second, req.body.sig)
+    addSigner(req.body.sig, req.session.sigId)
         .then(row => {
             req.session.sigId = row.rows[0].id;
             var id = row.rows[0].id;
