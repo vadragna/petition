@@ -18,6 +18,7 @@ exports.addSigner = function(first, last, sig) {
 };
 
 exports.getSigners = function() {
+    let id = "SELECT id FROM signatures";
     return db.query("SELECT first, last FROM signatures");
 };
 
