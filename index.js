@@ -47,6 +47,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
+    console.log("req.session in petition", req.session);
     if (req.session.sigId) {
         res.redirect("/thanks");
     } else {
@@ -122,9 +123,10 @@ app.post("/login", (req, res) => {
                         ).then(matchValue => {
                             console.log("match value: ", matchValue);
                             if (matchValue == true) {
+                                // console.log("boh", getUserId(req.body.email));
                                 getUserId(req.body.email).then(results => {
-                                    let userId = results.rows[0].id;
-                                    req.session.userId = userId;
+                                    // let userId = results.rows[0].id;
+                                    req.session.userId = results.rows[0].id;
                                     console.log(
                                         "req.session.userId",
                                         req.session.userId
@@ -172,6 +174,12 @@ app.post("/thanks", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
+    console.log(
+        "userId in petition",
+        req.session.sigId,
+        req.session,
+        "req.session"
+    );
     addSigner(req.body.sig, req.session.sigId)
         .then(row => {
             req.session.sigId = row.rows[0].id;

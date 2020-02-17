@@ -9,13 +9,12 @@ console.log("db", db);
 
 app.use(express.static("./static"));
 
-exports.addSigner = function(sig, id) {
-    let userId = db.query("SELECT id FROM users");
-    console.log("userId", userId);
+exports.addSigner = function(sig, userId) {
+    // let userId = db.query("SELECT id FROM users");
     return db.query(
         `INSERT INTO signatures (signature, user_id)
     VALUES ($1, $2) returning user_id`,
-        [sig, id]
+        [sig, userId]
     );
 };
 

@@ -25,6 +25,7 @@ canvas.on("mousedown", event => {
 
 $("#submit").on("click", () => {
     console.log("clicked");
+    console.log("sig", sig);
     console.log('$("#message").html()', $("#message").html());
     var sig = $("input#sig").html();
     if (sig != "") {
