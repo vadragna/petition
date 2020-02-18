@@ -74,8 +74,11 @@ app.post("/register", (req, res) => {
         .then(hash => {
             addUser(req.body.first, req.body.second, req.body.email, hash).then(
                 results => {
-                    let users = results;
-                    console.log("let users (results)", users);
+                    req.session.userId = results.rows[0].id;
+                    req.session.first = results.rows[0].first;
+                    req.session.last = results.rows[0].last;
+                    req.session.email = results.rows[0].email;
+                    // req.session.userId = results.rows[0].id;
                     res.redirect("petition");
                 }
             );
@@ -123,15 +126,16 @@ app.post("/login", (req, res) => {
                         ).then(matchValue => {
                             console.log("match value: ", matchValue);
                             if (matchValue == true) {
+                                req.session.userId = results.rows[0].id;
                                 // console.log("boh", getUserId(req.body.email));
                                 getUserId(req.body.email).then(results => {
                                     // let userId = results.rows[0].id;
-                                    req.session.userId = results.rows[0].id;
                                     console.log(
-                                        "req.session.userId",
-                                        req.session.userId
+                                        "req.session in login post",
+                                        req.session
                                     );
                                 });
+                                console.log("request.session", req.session);
                                 res.redirect("/petition");
                             } else {
                                 console.log("NO WAY!!");
@@ -174,13 +178,16 @@ app.post("/thanks", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
+    const { userId } = req.session;
     console.log(
         "userId in petition",
         req.session.sigId,
         req.session,
-        "req.session"
+        "req.session",
+        "userId",
+        userId
     );
-    addSigner(req.body.sig, req.session.sigId)
+    addSigner(req.body.sig, userId)
         .then(row => {
             req.session.sigId = row.rows[0].id;
             var id = row.rows[0].id;
