@@ -7,7 +7,7 @@ var { getSigners } = require("./db.js");
 var { addUser } = require("./db.js");
 var { getEmail } = require("./db.js");
 var { getPassword } = require("./db.js");
-var { getUserId } = require("./db.js");
+var { getUserId, getSigId } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
 const cookieSession = require("cookie-session");
@@ -47,14 +47,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
-    console.log("req.session in petition", req.session);
     if (req.session.sigId) {
         res.redirect("/thanks");
     } else {
         // console.log("first, last, sig", first, last, sig);
         // db.addDetails(firstname, lastname, sig).then(response =>
         // req.session.sigId = response.rows[0].id)
-        console.log("req.session in /petition", req.session);
         res.render("petition", {
             layout: "main"
         });
@@ -85,10 +83,6 @@ app.post("/register", (req, res) => {
         })
         .catch(err => console.log("err in registration", err));
     console.log("user input password", req.body.password);
-    // hash(req.body.password).then(hashedPw => {
-    //     console.log("hashed PW from /register", hashedPw);
-    //store in in the bd table
-    //redirect to somewhere else (first page)
 });
 
 app.get("/login", (req, res) => {
@@ -179,19 +173,20 @@ app.post("/thanks", (req, res) => {
 
 app.post("/petition", (req, res) => {
     const { userId } = req.session;
-    console.log(
-        "userId in petition",
-        req.session.sigId,
-        req.session,
-        "req.session",
-        "userId",
-        userId
-    );
     addSigner(req.body.sig, userId)
         .then(row => {
-            req.session.sigId = row.rows[0].id;
+            getSigId(req.body.sig).then(results => {
+                req.session.sigId = results.rows[0].id;
+                console.log(
+                    "results.rows[0].id",
+                    results.rows[0].id,
+                    "req.session",
+                    req.session
+                );
+            });
+            console.log("row in post petition", row);
+            console.log("req session in post petition", req.session);
             var id = row.rows[0].id;
-            console.log("req.session.sig", id);
             res.redirect("/thanks");
         })
         .catch(err => console.log("error in post petition", err));
