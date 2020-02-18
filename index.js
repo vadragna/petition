@@ -7,7 +7,7 @@ var { getSigners } = require("./db.js");
 var { addUser } = require("./db.js");
 var { getEmail } = require("./db.js");
 var { getPassword } = require("./db.js");
-var { getUserId, getSigId } = require("./db.js");
+var { getUserId, getSigId, getSigImg, newProfile } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
 const cookieSession = require("cookie-session");
@@ -42,8 +42,8 @@ app.use(function(req, res, next) {
 });
 
 app.get("/", (req, res) => {
-    req.session.allspice = "OK";
-    res.redirect("/petition");
+    // req.session.allspice = "OK";
+    res.redirect("/register");
 });
 
 app.get("/petition", (req, res) => {
@@ -77,12 +77,31 @@ app.post("/register", (req, res) => {
                     req.session.last = results.rows[0].last;
                     req.session.email = results.rows[0].email;
                     // req.session.userId = results.rows[0].id;
-                    res.redirect("petition");
+                    res.redirect("/profile");
                 }
             );
         })
         .catch(err => console.log("err in registration", err));
     console.log("user input password", req.body.password);
+});
+
+app.get("/profile", (req, res) => {
+    console.log("req.session in get profile", req.session);
+    res.render("profile", {
+        layout: "main"
+    });
+});
+
+app.post("/profile", (req, res) => {
+    newProfile(
+        req.body.age,
+        req.body.city,
+        req.body.homepage,
+        req.session.userId
+    ).then(results => {
+        console.log("results in post profile", results);
+        res.redirect("/petition");
+    });
 });
 
 app.get("/login", (req, res) => {
@@ -151,8 +170,17 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/thanks", (req, res) => {
-    res.render("thanks", {
-        layout: "main"
+    let id = req.session.userId;
+    // getSigImg(req.session.userId).then(results => {
+    //     console.log("results in thanks", results.rows);
+    // });
+    console.log("req.session in get thanks", req.session);
+    getSigImg(id).then(results => {
+        let nameAndSig = results.rows[0];
+        res.render("thanks", {
+            layout: "main",
+            nameAndSig: nameAndSig
+        });
     });
 });
 
@@ -175,18 +203,14 @@ app.post("/petition", (req, res) => {
     const { userId } = req.session;
     addSigner(req.body.sig, userId)
         .then(row => {
-            getSigId(req.body.sig).then(results => {
+            // req.session.sigImg = req.body.sig;
+            // console.log("req session in petition", req.session);
+            getSigId(req.body.sig, userId).then(results => {
                 req.session.sigId = results.rows[0].id;
-                console.log(
-                    "results.rows[0].id",
-                    results.rows[0].id,
-                    "req.session",
-                    req.session
-                );
             });
-            console.log("row in post petition", row);
-            console.log("req session in post petition", req.session);
-            var id = row.rows[0].id;
+            // console.log("row in post petition", row);
+            // console.log("req session in post petition", req.session);
+            // var id = row.rows[0].id;
             res.redirect("/thanks");
         })
         .catch(err => console.log("error in post petition", err));

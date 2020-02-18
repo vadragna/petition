@@ -6,6 +6,10 @@
     </head>
     <body>
         <h1>Thanks for having signed up out petition!!</h1>
+        <span>
+            {{nameAndSig.first}}{{nameAndSig.last}}
+        </span>
+        <img src="{{nameAndSig.sig}}"/>
         <form method ="POST">
              <input type="hidden" name="_csrf" value="{{csrfToken}}">
             <button id="submit" type="submit">See who has signed so far</button>
