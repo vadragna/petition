@@ -47,6 +47,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
+    console.log("req.session in get petition", req.session);
     if (req.session.sigId) {
         res.redirect("/thanks");
     } else {
@@ -171,11 +172,9 @@ app.post("/login", (req, res) => {
 
 app.get("/thanks", (req, res) => {
     let id = req.session.userId;
-    // getSigImg(req.session.userId).then(results => {
-    //     console.log("results in thanks", results.rows);
-    // });
     console.log("req.session in get thanks", req.session);
     getSigImg(id).then(results => {
+        console.log("results.rows[0]", results.rows[0]);
         let nameAndSig = results.rows[0];
         res.render("thanks", {
             layout: "main",

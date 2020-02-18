@@ -57,8 +57,15 @@ exports.getSigId = function(sig) {
 };
 
 exports.getSigImg = function(user_id) {
-    return db.query(`SELECT * FROM signatures WHERE user_id='${user_id}'`);
+    return db.query(`SELECT * FROM users
+        LEFT JOIN signatures
+        ON user_id = users.id
+        WHERE user_id='${user_id}'`);
 };
+
+// exports.checkSig = function(user_id) {
+//     return db.query(`SELECT * FROM signatures WHERE user_id='${user_id}'`);
+// };
 
 // WHERE email=${email}
 // DROP TABLE IF EXISTS signatures;
