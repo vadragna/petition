@@ -76,6 +76,23 @@ exports.getSigImg = function(user_id) {
         WHERE user_id='${user_id}'`);
 };
 
+exports.getAllUserData = function(userId) {
+    return db.query(`SELECT * FROM users
+        LEFT JOIN user_profiles
+        ON user_id = users.id
+        WHERE user_id='${userId}'`);
+};
+
+// exports.updateProfile = function(age, city, url, user_id) {
+//     return db.query(
+//         `INSERT INTO userProfiles (age, city, url, user_id)
+//         VALUES ($1, $2, $3, $4)
+//         ON CONFLICT (user_id) DO
+//         UPDATE SET age = $1, city = $2, url = $3`,
+//         [age || null, city || null, url || null, user_id]
+//     );
+// };
+
 // exports.checkSig = function(user_id) {
 //     return db.query(`SELECT * FROM signatures WHERE user_id='${user_id}'`);
 // };

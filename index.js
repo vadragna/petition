@@ -1,18 +1,24 @@
 var express = require("express");
 var app = express();
 const bodyParser = require("body-parser");
-const db = require("./db.js");
-var { addSigner } = require("./db.js");
-var { getSigners } = require("./db.js");
-var { addUser } = require("./db.js");
-var { getEmail } = require("./db.js");
-var { getPassword } = require("./db.js");
+// const db = require("./db.js");
+// var { addSigner } = require("./db.js");
+// var { getSigners } = require("./db.js");
+// var { addUser } = require("./db.js");
+// var { getEmail } = require("./db.js");
+// var { getPassword } = require("./db.js");
 var {
+    addSigner,
+    getSigners,
+    addUser,
+    getEmail,
     getUserId,
+    getPassword,
     getSigId,
     getSigImg,
     newProfile,
-    getSignerFromCity
+    getSignerFromCity,
+    getAllUserData
 } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
@@ -110,14 +116,39 @@ app.get("/profile", (req, res) => {
 });
 
 app.post("/profile", (req, res) => {
-    newProfile(
-        req.body.age,
-        req.body.city,
-        req.body.homepage,
-        req.session.userId
-    ).then(results => {
-        console.log("results in post profile", results);
+    var userUrl = req.body.homepage;
+    console.log("userUrl", userUrl);
+    if (!req.body.city && !req.body.url && !req.body.age && userUrl) {
         res.redirect("/petition");
+    }
+    if (userUrl.startsWith("http://") || userUrl.startsWith("https://")) {
+        userUrl = req.body.homepage;
+        console.log("req.body.homepage", req.body.homepage);
+    } else {
+        userUrl = null;
+        console.log("url not valid");
+    }
+
+    newProfile(req.body.age, req.body.city, userUrl, req.session.userId)
+        .then(results => {
+            console.log("results in post profile", results);
+            res.redirect("/petition");
+        })
+        .catch(err => {
+            res.render("profile", {
+                layout: "main",
+                errorMessage: "The web site has to starti with http:// or"
+            });
+        });
+});
+
+app.get("/profile/edit", (req, res) => {
+    getAllUserData(req.session.userId).then(results => {
+        let allData = results.rows;
+        res.render("edit", {
+            layout: "main",
+            allData
+        });
     });
 });
 
@@ -211,12 +242,6 @@ app.get("/signers/:city", (req, res) => {
     console.log("req.params.city", req.params.city);
     getSignerFromCity(req.params.city).then(results => {
         let subscribers = results.rows;
-        console.log(
-            "subscribersFromCity",
-            subscribers,
-            "results.rows",
-            results.rows
-        );
         res.render("signers", {
             layout: "main",
             subscribers

@@ -1,6 +1,8 @@
+{{#allData}}
 <form method ="POST">
 <input id="age" name="age" placeholder="age">
 <input id="city" name="city" placeholder="city">
 <input id="homepage" name="homepage" placeholder="homepage">
 <input type="hidden" name="_csrf" value="{{csrfToken}}">
 <button id="submit" type="submit">Submit</button>
+{{errorMessage}}
