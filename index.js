@@ -74,23 +74,32 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-    //grap user's password req.body.password(dipende dal node dell'input field)
-    //hash user PW and store to database
-    hash(req.body.password)
-        .then(hash => {
-            addUser(req.body.first, req.body.second, req.body.email, hash).then(
-                results => {
+    if (
+        req.body.first &&
+        req.body.second &&
+        req.body.email &&
+        req.body.password
+    ) {
+        hash(req.body.password).then(hash => {
+            addUser(req.body.first, req.body.second, req.body.email, hash)
+                .then(results => {
                     req.session.userId = results.rows[0].id;
                     req.session.first = results.rows[0].first;
                     req.session.last = results.rows[0].last;
                     req.session.email = results.rows[0].email;
                     // req.session.userId = results.rows[0].id;
                     res.redirect("/profile");
-                }
-            );
-        })
-        .catch(err => console.log("err in registration", err));
-    console.log("user input password", req.body.password);
+                })
+                .catch(err => {
+                    console.log("error in registration", err);
+                });
+        });
+    } else {
+        res.render("registration", {
+            layout: "main",
+            errorMessage: "you must fill out all fields to register"
+        });
+    }
 });
 
 app.get("/profile", (req, res) => {
@@ -153,7 +162,10 @@ app.post("/login", (req, res) => {
                                 console.log("request.session", req.session);
                                 res.redirect("/petition");
                             } else {
-                                console.log("NO WAY!!");
+                                res.render("login", {
+                                    layout: "main",
+                                    errorMessage: "wrong email or password"
+                                });
                             }
                         });
                         // if (compare(hashedPw, results.rows[0].password)) {
@@ -166,8 +178,10 @@ app.post("/login", (req, res) => {
             }
         })
         .catch(err => {
-            console.log("no existing mail in db");
-            res.redirect("/login");
+            res.render("login", {
+                layout: "main",
+                errorMessage: "wrong email or password"
+            });
         });
 });
 
