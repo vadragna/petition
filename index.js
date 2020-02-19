@@ -7,7 +7,13 @@ var { getSigners } = require("./db.js");
 var { addUser } = require("./db.js");
 var { getEmail } = require("./db.js");
 var { getPassword } = require("./db.js");
-var { getUserId, getSigId, getSigImg, newProfile } = require("./db.js");
+var {
+    getUserId,
+    getSigId,
+    getSigImg,
+    newProfile,
+    getSignerFromCity
+} = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
 const cookieSession = require("cookie-session");
@@ -47,8 +53,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
+    const { sigId } = req.session;
     console.log("req.session in get petition", req.session);
-    if (req.session.sigId) {
+    if (sigId) {
         res.redirect("/thanks");
     } else {
         // console.log("first, last, sig", first, last, sig);
@@ -128,12 +135,6 @@ app.post("/login", (req, res) => {
                 console.log("existing mail in db");
                 getPassword(req.body.password, req.body.email).then(results => {
                     hash(req.body.password).then(hashedPw => {
-                        console.log(
-                            "hashedPw",
-                            hashedPw,
-                            "results.rows[0].password",
-                            results.rows[0].password
-                        );
                         compare(
                             req.body.password,
                             results.rows[0].password
@@ -174,7 +175,6 @@ app.get("/thanks", (req, res) => {
     let id = req.session.userId;
     console.log("req.session in get thanks", req.session);
     getSigImg(id).then(results => {
-        console.log("results.rows[0]", results.rows[0]);
         let nameAndSig = results.rows[0];
         res.render("thanks", {
             layout: "main",
@@ -194,6 +194,23 @@ app.get("/signers", (req, res) => {
     });
 });
 
+app.get("/signers/:city", (req, res) => {
+    console.log("req.params.city", req.params.city);
+    getSignerFromCity(req.params.city).then(results => {
+        let subscribersFromCity = results.rows;
+        console.log(
+            "subscribersFromCity",
+            subscribersFromCity,
+            "results.rows",
+            results.rows
+        );
+        res.render("signers", {
+            layout: "main",
+            subscribersFromCity
+        });
+    });
+});
+
 app.post("/thanks", (req, res) => {
     res.redirect("/signers");
 });
@@ -201,12 +218,15 @@ app.post("/thanks", (req, res) => {
 app.post("/petition", (req, res) => {
     const { userId } = req.session;
     addSigner(req.body.sig, userId)
-        .then(row => {
+        .then(results => {
+            req.session.sigId = results.rows[0].id;
+            console.log("req session after post petition", req.session);
             // req.session.sigImg = req.body.sig;
             // console.log("req session in petition", req.session);
-            getSigId(req.body.sig, userId).then(results => {
-                req.session.sigId = results.rows[0].id;
-            });
+            // getSigId(req.body.sig, userId).then(results => {
+            //     req.session.sigId = results.rows[0].id;
+            //     console.log("req.session in post petition", req.session);
+            // });
             // console.log("row in post petition", row);
             // console.log("req session in post petition", req.session);
             // var id = row.rows[0].id;
@@ -216,4 +236,6 @@ app.post("/petition", (req, res) => {
     // res.sendStatus("500");
 });
 
-app.listen(8080, () => console.log("Petition server is listening"));
+app.listen(process.env.PORT || 8080, () =>
+    console.log("Petition server is listening")
+);

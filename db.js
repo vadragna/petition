@@ -3,9 +3,10 @@ var app = express();
 
 const spicePg = require("spiced-pg");
 
-const db = spicePg("postgres://postgres:postgres@localhost:5432/petition");
-
-console.log("db", db);
+const db = spicePg(
+    process.env.DATABASE_URL ||
+        "postgres://postgres:postgres@localhost:5432/petition"
+);
 
 app.use(express.static("./static"));
 
@@ -13,15 +14,24 @@ exports.addSigner = function(sig, user_id) {
     // let userId = db.query("SELECT id FROM users");
     return db.query(
         `INSERT INTO signatures (sig, user_id)
-    VALUES ($1, $2) returning user_id`,
+    VALUES ($1, $2) returning id`,
         [sig, user_id]
     );
 };
 
 exports.getSigners = function() {
-    return db.query(`SELECT first, last FROM users
+    return db.query(`SELECT * FROM users
     LEFT JOIN user_profiles
     ON user_id = users.id`);
+};
+
+exports.getSignerFromCity = function(city) {
+    {
+        return db.query(`SELECT * FROM users
+        LEFT JOIN user_profiles
+        ON user_id = users.id
+        WHERE city='${city}'`);
+    }
 };
 
 exports.addUser = function(first, last, email, password) {
