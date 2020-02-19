@@ -186,7 +186,6 @@ app.get("/thanks", (req, res) => {
 app.get("/signers", (req, res) => {
     getSigners().then(results => {
         let subscribers = results.rows;
-        console.log("results.rows", results.rows);
         res.render("signers", {
             layout: "main",
             subscribers
@@ -197,16 +196,16 @@ app.get("/signers", (req, res) => {
 app.get("/signers/:city", (req, res) => {
     console.log("req.params.city", req.params.city);
     getSignerFromCity(req.params.city).then(results => {
-        let subscribersFromCity = results.rows;
+        let subscribers = results.rows;
         console.log(
             "subscribersFromCity",
-            subscribersFromCity,
+            subscribers,
             "results.rows",
             results.rows
         );
         res.render("signers", {
             layout: "main",
-            subscribersFromCity
+            subscribers
         });
     });
 });
@@ -234,6 +233,11 @@ app.post("/petition", (req, res) => {
         })
         .catch(err => console.log("error in post petition", err));
     // res.sendStatus("500");
+});
+
+app.get("/logout", (req, res) => {
+    res.session = null;
+    res.redirect("login");
 });
 
 app.listen(process.env.PORT || 8080, () =>

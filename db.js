@@ -26,11 +26,14 @@ exports.getSigners = function() {
 };
 
 exports.getSignerFromCity = function(city) {
+    let lowerCity = city.toLowerCase();
+    console.log(lowerCity, "lowerCity");
     {
         return db.query(`SELECT * FROM users
         LEFT JOIN user_profiles
         ON user_id = users.id
-        WHERE city='${city}'`);
+        WHERE city='${lowerCity}'
+        OR city='${city}'`);
     }
 };
 
@@ -62,8 +65,8 @@ exports.getUserId = function(email) {
     return db.query(`SELECT id FROM users WHERE email='${email}'`);
 };
 
-exports.getSigId = function(sig) {
-    return db.query(`SELECT * FROM signatures WHERE sig='${sig}'`);
+exports.getSigId = function(userId) {
+    return db.query(`SELECT * FROM signatures WHERE user_id='${userId}'`);
 };
 
 exports.getSigImg = function(user_id) {

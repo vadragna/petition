@@ -15,4 +15,4 @@ CREATE TABLE signatures(
       sig TEXT NOT NULL,
       user_id INTEGER NOT NULL REFERENCES users(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+  );
