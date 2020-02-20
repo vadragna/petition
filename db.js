@@ -93,7 +93,22 @@ exports.updateProfileNoPassword = function(userId, age, city, url) {
     );
 };
 
-exports.updateUsersTable = function(userId, first, last, email, password) {
+exports.updateUsersTable = function(userId, first, last, email) {
+    return db.query(
+        `UPDATE users
+     SET first =$2, last=$3, email=$4
+     WHERE id=$1`,
+        [userId, first, last, email]
+    );
+};
+
+exports.updateUsersTableWithPw = function(
+    userId,
+    first,
+    last,
+    email,
+    password
+) {
     return db.query(
         `UPDATE users
      SET first =$2, last=$3, email=$4, password=$5

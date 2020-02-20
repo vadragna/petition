@@ -24,7 +24,8 @@ var {
     updateProfileNoPassword,
     updateProfile,
     getDataFromEmail,
-    updateUsersTable
+    updateUsersTable,
+    updateUsersTableWithPw
 } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
@@ -91,9 +92,8 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", (req, res) => {
-    const { sigId } = req.session;
     console.log("req.session in get petition", req.session);
-    if (sigId) {
+    if (req.session.sigId) {
         res.redirect("/thanks");
     } else {
         // console.log("first, last, sig", first, last, sig);
@@ -198,24 +198,26 @@ app.post("/profile/edit", (req, res) => {
         updateProfile(age, city, url, req.session.userId)
             .then(results => {
                 console.log("results.rows in /profile/edit", results.rows);
-                updateUsersTable(
-                    req.session.userId,
-                    first,
-                    last,
-                    email,
-                    password
-                );
+                updateUsersTable(req.session.userId, first, last, email);
                 res.redirect("/thanks");
             })
             .catch(err => console.log("err in profile edit post", err));
     } else {
-        updateProfile(req.session.userId, first, last, email, req.body.password)
-            .then(results => {
-                console.log(
-                    console.log("results.rows in /profile/edit", results.rows)
-                );
-            })
-            .catch(err => console.log("err in profile edit post", err));
+        updateProfile(age, city, url, req.session.userId).then(() => {
+            hash(req.body.password)
+                .then(hash => {
+                    console.log("hash", hash);
+                    updateUsersTableWithPw(
+                        req.session.userId,
+                        first,
+                        last,
+                        email,
+                        hash
+                    );
+                })
+                .catch(err => console.log("err in profile edit post", err));
+        });
+        res.redirect("/thanks");
     }
 });
 
