@@ -1,4 +1,7 @@
-{{#allData}}
+
+<form method= "POST">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    {{#allData}}
 <input id="first" name="first" placeholder="first name" value="{{first}}">
 <input id="last" name="second" placeholder="second name" value="{{last}}">
 <input id="email" name="email" placeholder="e-mail address" value="{{email}}">
@@ -6,8 +9,9 @@
 <input id="age" name="age" placeholder="age" value="{{age}}">
 <input id="city" name="city" placeholder="city" value="{{city}}">
 <input id="homepage" name="homepage" placeholder="homepage" value="{{url}}">
-<input type="hidden" name="_csrf" value="{{csrfToken}}">
+
 <button id="submit" type="submit">UPDATE</button>
+ {{/allData}}
   </form>
-  {{/allData}}
+
   <div id="message"></div>
