@@ -1,5 +1,7 @@
 var express = require("express");
 var app = express();
+exports.app = app;
+
 const bodyParser = require("body-parser");
 const {
     requireSignature,
@@ -21,8 +23,8 @@ var {
     getAllUserData,
     updateProfileNoPassword,
     updateProfile,
-    getPassword,
-    getDataFromEmail
+    getDataFromEmail,
+    updateUsersTable
 } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
@@ -58,13 +60,30 @@ app.use(function(req, res, next) {
 });
 
 //
-// app.use(function(req, res, next) {
-//     if (!req.session.userId && req.url != "/register" && req.url != "/login") {
-//         res.redirect("/register");
-//     } else {
-//         next();
-//     }
-// });
+app.use(function(req, res, next) {
+    if (!req.session.userId && req.url != "/register" && req.url != "/login") {
+        res.redirect("/register");
+    } else {
+        next();
+    }
+});
+
+app.get("/welcome", (req, res) => {
+    res.send("<h1>yes!</h1>");
+});
+
+app.post("/welcome", (req, res) => {
+    req.session.submitted = true;
+    res.redirect("/home");
+});
+
+app.get("/home", (req, res) => {
+    console.log("req.session", req.session);
+    if (!req.session.submitted) {
+        return res.redirect("/welcome");
+    }
+    res.send("<h1>home</h1>");
+});
 
 app.get("/", (req, res) => {
     // req.session.allspice = "OK";
@@ -169,23 +188,23 @@ app.post("/profile/edit", (req, res) => {
     let first = req.body.first;
     let last = req.body.second;
     let email = req.body.email;
-    // let password = getPassword(req.session.userId)
-    //     .then(oldPassword => {
-    //         console.log("oldPassword", oldPassword);
-    //         return oldPassword;
-    //     })
-    //     .catch(err => {
-    //         console.log("err in profile edit with pw", err);
-    //     });
-
-    let age = req.body.email;
+    let password = req.body.password;
+    let url = req.body.homepage;
+    let age = req.body.age;
     let city = req.body.city;
-    let homepage = req.body.homepage;
-    if (req.body.password.trim().lenght <= 0) {
+    console.log("req.body.password", req.body.password);
+    if (!password) {
         console.log("no password to be updated");
-        updateProfileNoPassword(req.session.userId, first, last, email)
+        updateProfile(age, city, url, req.session.userId)
             .then(results => {
                 console.log("results.rows in /profile/edit", results.rows);
+                updateUsersTable(
+                    req.session.userId,
+                    first,
+                    last,
+                    email,
+                    password
+                );
                 res.redirect("/thanks");
             })
             .catch(err => console.log("err in profile edit post", err));
@@ -311,6 +330,8 @@ app.get("/logout", (req, res) => {
     res.redirect("login");
 });
 
-app.listen(process.env.PORT || 8080, () =>
-    console.log("Petition server is listening")
-);
+if (require.main === module) {
+    app.listen(process.env.PORT || 8080, () =>
+        console.log("Petition server is listening")
+    );
+}

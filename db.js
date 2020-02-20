@@ -84,16 +84,16 @@ exports.getAllUserData = function(userId) {
         WHERE user_id='${userId}'`);
 };
 
-exports.updateProfileNoPassword = function(userId, first, last, email) {
+exports.updateProfileNoPassword = function(userId, age, city, url) {
     return db.query(
-        `UPDATE users
-     SET first =$2, last=$3, email=$4
+        `UPDATE user_profiles
+     SET age =$2, city=$3, =$4
      WHERE id=$1`,
         [userId, first, last, email]
     );
 };
 
-exports.updateProfile = function(userId, first, last, email, password) {
+exports.updateUsersTable = function(userId, first, last, email, password) {
     return db.query(
         `UPDATE users
      SET first =$2, last=$3, email=$4, password=$5
@@ -106,15 +106,15 @@ exports.getPassword = function(userId) {
     return db.query(`SELECT password FROM users WHERE id='${userId}'`);
 };
 
-// exports.updateProfile = function(age, city, url, user_id) {
-//     return db.query(
-//         `INSERT INTO userProfiles (age, city, url, user_id)
-//         VALUES ($1, $2, $3, $4)
-//         ON CONFLICT (user_id) DO
-//         UPDATE SET age = $1, city = $2, url = $3`,
-//         [age || null, city || null, url || null, user_id]
-//     );
-// };
+exports.updateProfile = function(age, city, url, userId) {
+    return db.query(
+        `INSERT INTO user_profiles (age, city, url, user_id)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id) DO
+        UPDATE SET age = $1, city = $2, url = $3`,
+        [age || null, city || null, url || null, userId]
+    );
+};
 
 // exports.checkSig = function(user_id) {
 //     return db.query(`SELECT * FROM signatures WHERE user_id='${user_id}'`);
