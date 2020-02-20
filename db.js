@@ -53,11 +53,12 @@ VALUES ($1, $2, $3, $4) returning id`,
     );
 };
 
-exports.getEmail = function(email) {
-    return db.query(`SELECT email FROM users WHERE email='${email}'`);
+exports.getDataFromEmail = function(email) {
+    return db.query(`SELECT * FROM users WHERE email='${email}'`);
 };
 
-exports.getPassword = function(password, email) {
+exports.getPassword = function(email) {
+    console.log("email in db.js", email);
     return db.query(`SELECT * FROM users WHERE email='${email}'`);
 };
 

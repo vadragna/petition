@@ -1,12 +1,12 @@
 var express = require("express");
 var app = express();
 const bodyParser = require("body-parser");
-// const db = require("./db.js");
-// var { addSigner } = require("./db.js");
-// var { getSigners } = require("./db.js");
-// var { addUser } = require("./db.js");
-// var { getEmail } = require("./db.js");
-// var { getPassword } = require("./db.js");
+const {
+    requireSignature,
+    requireNoSignatures,
+    requireLoggedOutUser
+} = require("./middleware");
+
 var {
     addSigner,
     getSigners,
@@ -21,7 +21,8 @@ var {
     getAllUserData,
     updateProfileNoPassword,
     updateProfile,
-    getPassword
+    getPassword,
+    getDataFromEmail
 } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
@@ -55,6 +56,15 @@ app.use(function(req, res, next) {
     res.locals.csrfToken = req.csrfToken();
     next();
 });
+
+//
+// app.use(function(req, res, next) {
+//     if (!req.session.userId && req.url != "/register" && req.url != "/login") {
+//         res.redirect("/register");
+//     } else {
+//         next();
+//     }
+// });
 
 app.get("/", (req, res) => {
     // req.session.allspice = "OK";
@@ -206,44 +216,28 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
     console.log("req.body.email", req.body.email);
-    getEmail(req.body.email)
+    getDataFromEmail(req.body.email)
         .then(results => {
             if (results.rows[0].email == req.body.email) {
-                // compare(req.body.password, )
+                console.log("results in post login", results);
                 console.log("existing mail in db");
-                getPassword(req.body.password, req.body.email).then(results => {
-                    hash(req.body.password).then(hashedPw => {
-                        compare(
-                            req.body.password,
-                            results.rows[0].password
-                        ).then(matchValue => {
-                            console.log("match value: ", matchValue);
-                            if (matchValue == true) {
-                                req.session.userId = results.rows[0].id;
-                                // console.log("boh", getUserId(req.body.email));
-                                getUserId(req.body.email).then(results => {
-                                    // let userId = results.rows[0].id;
-                                    console.log(
-                                        "req.session in login post",
-                                        req.session
-                                    );
-                                });
-                                console.log("request.session", req.session);
-                                res.redirect("/petition");
-                            } else {
-                                res.render("login", {
-                                    layout: "main",
-                                    errorMessage: "wrong email or password"
-                                });
-                            }
-                        });
-                        // if (compare(hashedPw, results.rows[0].password)) {
-                        //     console.log("you can log in!");
-                        // } else {
-                        //     console.log("no way");
-                        // }
-                    });
-                });
+                // hash(req.body.password).then(hashedPw => {
+                compare(req.body.password, results.rows[0].password)
+                    .then(matchValue => {
+                        console.log("match value: ", matchValue);
+                        if (matchValue == true) {
+                            req.session.userId = results.rows[0].id;
+                            // console.log("boh", getUserId(req.body.email));
+                            console.log("request.session", req.session);
+                            res.redirect("/petition");
+                        } else {
+                            res.render("login", {
+                                layout: "main",
+                                errorMessage: "wrong email or password"
+                            });
+                        }
+                    })
+                    .catch(err => console.log("err in post login", err));
             }
         })
         .catch(err => {
