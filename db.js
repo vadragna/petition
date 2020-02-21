@@ -26,13 +26,19 @@ exports.getSigners = function() {
 
 exports.getSignerFromCity = function(city) {
     let lowerCity = city.toLowerCase();
+    let capitalizedCity = city[0].toUpperCase() + city.slice(1, 10);
+    console.log("capitalizedCity", capitalizedCity);
     console.log(lowerCity, "lowerCity");
     {
-        return db.query(`SELECT * FROM users
+        return db.query(
+            `SELECT * FROM users
         LEFT JOIN user_profiles
         ON user_id = users.id
-        WHERE city='${lowerCity}'
-        OR city='${city}'`);
+        WHERE city=$1
+        OR city=$2
+        OR city=$3`,
+            [lowerCity, city, capitalizedCity]
+        );
     }
 };
 
@@ -64,11 +70,11 @@ exports.getDataFromEmail = function(email) {
 
 exports.getPassword = function(email) {
     console.log("email in db.js", email);
-    return db.query(`SELECT * FROM users WHERE email='${email}'`);
+    return db.query(`SELECT * FROM users WHERE email=$1`, [email]);
 };
 
 exports.getUserId = function(email) {
-    return db.query(`SELECT id FROM users WHERE email='${email}'`);
+    return db.query(`SELECT id FROM users WHERE email=$1`, [email]);
 };
 
 exports.getSigImg = function(user_id) {
@@ -79,10 +85,13 @@ exports.getSigImg = function(user_id) {
 };
 
 exports.getAllUserData = function(userId) {
-    return db.query(`SELECT * FROM users
+    return db.query(
+        `SELECT * FROM users
         LEFT JOIN user_profiles
         ON user_id = users.id
-        WHERE user_id='${userId}'`);
+        WHERE user_id=$1`,
+        [userId]
+    );
 };
 
 exports.updateUsersTable = function(userId, first, last, email) {
@@ -122,6 +131,7 @@ exports.updateProfile = function(age, city, url, userId) {
 exports.deleteSig = function(userId) {
     return db.query(
         `DELETE from signatures
-        WHERE user_id='${userId}'`
+        WHERE user_id=$1`,
+        [userId]
     );
 };
