@@ -18,3 +18,8 @@ ul {
 body {
     background-color: teal;
 }
+
+#windows {
+    width: 500px;
+    height: 300px;
+}

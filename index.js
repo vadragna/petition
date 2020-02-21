@@ -5,7 +5,7 @@ exports.app = app;
 const bodyParser = require("body-parser");
 const {
     requireSignature,
-    requireNoSignatures,
+    requireNoSignature,
     requireLoggedOutUser
 } = require("./middleware");
 
@@ -13,19 +13,15 @@ var {
     addSigner,
     getSigners,
     addUser,
-    getEmail,
-    getUserId,
-    getPassword,
-    getSigId,
     getSigImg,
     newProfile,
     getSignerFromCity,
     getAllUserData,
-    updateProfileNoPassword,
     updateProfile,
     getDataFromEmail,
     updateUsersTable,
-    updateUsersTableWithPw
+    updateUsersTableWithPw,
+    deleteSig
 } = require("./db.js");
 const { hash, compare } = require("./utils/bc.js");
 
@@ -91,7 +87,7 @@ app.get("/", (req, res) => {
     res.redirect("/register");
 });
 
-app.get("/petition", (req, res) => {
+app.get("/petition", requireNoSignature, (req, res) => {
     console.log("req.session in get petition", req.session);
     if (req.session.sigId) {
         res.redirect("/thanks");
@@ -156,10 +152,9 @@ app.post("/profile", (req, res) => {
         userUrl = req.body.homepage;
         console.log("req.body.homepage", req.body.homepage);
     } else {
-        userUrl = null;
+        userUrl = "";
         console.log("url not valid");
     }
-
     newProfile(req.body.age, req.body.city, userUrl, req.session.userId)
         .then(results => {
             console.log("results in post profile", results);
@@ -221,34 +216,27 @@ app.post("/profile/edit", (req, res) => {
     }
 });
 
-app.get("/login", (req, res) => {
+app.get("/login", requireLoggedOutUser, (req, res) => {
     res.render("login", {
         layout: "main"
     });
-    //compare two arguments hashed PW retrived from database and the typed in password.
-    //if they match returns true otherwise false. The e-mail will be the id (in WHERE statement)
-    // const hashFromDb = "test"; //questo deve essere preso dal bd
-    // compare("userInput", hashFromDb).then(matchValue => {
-    //     console.log("matchValue of compare: ", matchValue);
-    // });
-    //if the match redirect to petition, set somthing in req.session.userId, if they do not match,
-    //trigger or send error message
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", requireLoggedOutUser, (req, res) => {
     console.log("req.body.email", req.body.email);
     getDataFromEmail(req.body.email)
         .then(results => {
+            console.log("results.rows in post login", results.rows[0]);
+            req.session.sigId = results.rows[0].id;
+            console.log(req.session, "req.session in post login");
             if (results.rows[0].email == req.body.email) {
-                console.log("results in post login", results);
                 console.log("existing mail in db");
                 // hash(req.body.password).then(hashedPw => {
                 compare(req.body.password, results.rows[0].password)
                     .then(matchValue => {
                         console.log("match value: ", matchValue);
                         if (matchValue == true) {
-                            req.session.userId = results.rows[0].id;
-                            // console.log("boh", getUserId(req.body.email));
+                            req.session.userId = results.rows[0].user_id;
                             console.log("request.session", req.session);
                             res.redirect("/petition");
                         } else {
@@ -269,7 +257,7 @@ app.post("/login", (req, res) => {
         });
 });
 
-app.get("/thanks", (req, res) => {
+app.get("/thanks", requireSignature, (req, res) => {
     let id = req.session.userId;
     console.log("req.session in get thanks", req.session);
     getSigImg(id).then(results => {
@@ -281,7 +269,7 @@ app.get("/thanks", (req, res) => {
     });
 });
 
-app.get("/signers", (req, res) => {
+app.get("/signers", requireSignature, (req, res) => {
     getSigners().then(results => {
         let subscribers = results.rows;
         res.render("signers", {
@@ -291,7 +279,7 @@ app.get("/signers", (req, res) => {
     });
 });
 
-app.get("/signers/:city", (req, res) => {
+app.get("/signers/:city", requireSignature, (req, res) => {
     console.log("req.params.city", req.params.city);
     getSignerFromCity(req.params.city).then(results => {
         let subscribers = results.rows;
@@ -312,24 +300,21 @@ app.post("/petition", (req, res) => {
         .then(results => {
             req.session.sigId = results.rows[0].id;
             console.log("req session after post petition", req.session);
-            // req.session.sigImg = req.body.sig;
-            // console.log("req session in petition", req.session);
-            // getSigId(req.body.sig, userId).then(results => {
-            //     req.session.sigId = results.rows[0].id;
-            //     console.log("req.session in post petition", req.session);
-            // });
-            // console.log("row in post petition", row);
-            // console.log("req session in post petition", req.session);
-            // var id = row.rows[0].id;
             res.redirect("/thanks");
         })
         .catch(err => console.log("error in post petition", err));
-    // res.sendStatus("500");
 });
 
 app.get("/logout", (req, res) => {
-    res.session = null;
+    req.session = null;
     res.redirect("login");
+});
+
+app.get("/delete", (req, res) => {
+    console.log("req.session.sigId", req.session.sigId);
+    deleteSig(req.session.userId);
+    req.session.sigId = null;
+    res.redirect("/petition");
 });
 
 if (require.main === module) {

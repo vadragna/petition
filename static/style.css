@@ -1,3 +1,8 @@
 body {
     background-color: hotpink;
 }
+
+#windows {
+    width: 500px;
+    height: 500px;
+}

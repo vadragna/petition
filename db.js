@@ -11,7 +11,6 @@ const db = spicePg(
 app.use(express.static("./static"));
 
 exports.addSigner = function(sig, user_id) {
-    // let userId = db.query("SELECT id FROM users");
     return db.query(
         `INSERT INTO signatures (sig, user_id)
     VALUES ($1, $2) returning id`,
@@ -54,7 +53,10 @@ VALUES ($1, $2, $3, $4) returning id`,
 };
 
 exports.getDataFromEmail = function(email) {
-    return db.query(`SELECT * FROM users WHERE email='${email}'`);
+    return db.query(`SELECT * FROM users
+        LEFT JOIN signatures
+        ON user_id = users.id
+        WHERE email='${email}'`);
 };
 
 exports.getPassword = function(email) {
@@ -64,10 +66,6 @@ exports.getPassword = function(email) {
 
 exports.getUserId = function(email) {
     return db.query(`SELECT id FROM users WHERE email='${email}'`);
-};
-
-exports.getSigId = function(userId) {
-    return db.query(`SELECT * FROM signatures WHERE user_id='${userId}'`);
 };
 
 exports.getSigImg = function(user_id) {
@@ -82,15 +80,6 @@ exports.getAllUserData = function(userId) {
         LEFT JOIN user_profiles
         ON user_id = users.id
         WHERE user_id='${userId}'`);
-};
-
-exports.updateProfileNoPassword = function(userId, age, city, url) {
-    return db.query(
-        `UPDATE user_profiles
-     SET age =$2, city=$3, =$4
-     WHERE id=$1`,
-        [userId, first, last, email]
-    );
 };
 
 exports.updateUsersTable = function(userId, first, last, email) {
@@ -117,10 +106,6 @@ exports.updateUsersTableWithPw = function(
     );
 };
 
-exports.getPassword = function(userId) {
-    return db.query(`SELECT password FROM users WHERE id='${userId}'`);
-};
-
 exports.updateProfile = function(age, city, url, userId) {
     return db.query(
         `INSERT INTO user_profiles (age, city, url, user_id)
@@ -131,18 +116,9 @@ exports.updateProfile = function(age, city, url, userId) {
     );
 };
 
-// exports.checkSig = function(user_id) {
-//     return db.query(`SELECT * FROM signatures WHERE user_id='${user_id}'`);
-// };
-
-// WHERE email=${email}
-// DROP TABLE IF EXISTS signatures;
-//
-// CREATE TABLE signatures (
-//
-// id SERIAL PRIMARY KEY,
-//
-// first VARCHAR NOT NULL CHECK (first != ''),
-// last VARCHAR NOT NULL CHECK (last != ''),
-// sig VARCHAR NOT NULL CHECK (sig != '')
-// );
+exports.deleteSig = function(userId) {
+    return db.query(
+        `DELETE from signatures
+        WHERE user_id='${userId}'`
+    );
+};
