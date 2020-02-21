@@ -47,16 +47,19 @@ VALUES ($1, $2, $3, $4) RETURNING id`,
 exports.newProfile = function(age, city, hp, userId) {
     return db.query(
         `INSERT INTO user_profiles (age, city, url, user_id)
-VALUES ($1, $2, $3, $4) returning id`,
+        VALUES ($1, $2, $3, $4) returning id`,
         [age, city, hp, userId]
     );
 };
 
 exports.getDataFromEmail = function(email) {
-    return db.query(`SELECT * FROM users
+    return db.query(
+        `SELECT * FROM users
         LEFT JOIN signatures
         ON user_id = users.id
-        WHERE email='${email}'`);
+        WHERE email=$1`,
+        [email]
+    );
 };
 
 exports.getPassword = function(email) {

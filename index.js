@@ -148,11 +148,16 @@ app.post("/profile", (req, res) => {
     if (!req.body.city && !req.body.url && !req.body.age && userUrl) {
         res.redirect("/petition");
     }
-    if (userUrl.startsWith("http://") || userUrl.startsWith("https://")) {
+    if (
+        userUrl.startsWith("http://") ||
+        userUrl.startsWith("https://") ||
+        userUrl.startsWith("//")
+    ) {
         userUrl = req.body.homepage;
         console.log("req.body.homepage", req.body.homepage);
     } else {
-        userUrl = "";
+        userUrl = "http://" + userUrl;
+        console.log("new url", userUrl);
         console.log("url not valid");
     }
     newProfile(req.body.age, req.body.city, userUrl, req.session.userId)
@@ -163,7 +168,8 @@ app.post("/profile", (req, res) => {
         .catch(err => {
             res.render("profile", {
                 layout: "main",
-                errorMessage: "The web site has to starti with http:// or"
+                errorMessage:
+                    "The web site has to starti with http:// or https://"
             });
         });
 });
@@ -272,6 +278,7 @@ app.get("/thanks", requireSignature, (req, res) => {
 app.get("/signers", requireSignature, (req, res) => {
     getSigners().then(results => {
         let subscribers = results.rows;
+        console.log("subscribers", subscribers);
         res.render("signers", {
             layout: "main",
             subscribers
