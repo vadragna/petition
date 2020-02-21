@@ -8,12 +8,14 @@
         <h1>Thanks for having signed up out petition!!</h1>
         <span>
             {{nameAndSig.first}} {{nameAndSig.last}}, thanks for having signed our petition
-        </span>
+        </span><br>
         <img src="{{nameAndSig.sig}}"/>
         <form method ="POST">
              <input type="hidden" name="_csrf" value="{{csrfToken}}">
             <button id="submit" type="submit">See who has signed so far</button>
         </form>
+        <a href="/profile/edit"><button>EDIT YOUR PROFILE</button></a>
+        <a href="/logout"><button>LOG OUT</button></a>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
         <script type="text/javascript" src="thanks.js">
 <form method ="POST"> <button id="submit" type="submit">back</button></form>

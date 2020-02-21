@@ -14,3 +14,7 @@ ul {
     list-style: none;
     font-family: "Sriracha", cursive;
 }
+
+body {
+    background-color: teal;
+}
