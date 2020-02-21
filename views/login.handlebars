@@ -1,6 +1,6 @@
 <form method ="POST">
-<input id="e-mail" name="email" placeholder="e-mail address">
-<input id="password" name="password" placeholder="choose a password">
+email<input id="e-mail" name="email" placeholder="insert your e-mail address"><br>
+password<input id="password" name="password" placeholder="insert your password password"><br>
 <input type="hidden" name="_csrf" value="{{csrfToken}}">
 <button id="submit" type="submit">Submit</button>
-<br>{{errorMessage}}
+<br><h4 class="error">{{errorMessage}}</h4>
