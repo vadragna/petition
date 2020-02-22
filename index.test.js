@@ -2,46 +2,77 @@ const supertest = require("supertest");
 const { app } = require("./index");
 const cookieSession = require("cookie-session");
 
-// cookieSession.mockSession({
-//     test: true
-// });
-
-// test("GET / home sends 302 when no cookie", () => {
-//     return supertest(app)
-//         .get("/home")
-//         .then(res => {
-//             expect(res.statusCode).toBe(302);
-//             expect(res.headers.location).toBe("welcome");
-//         });
-// });
-//
-// test("GET / welcome sends 200 status code", () => {
-//     return supertest(app)
-//         .get("/welcome")
-//         .then(res => {
-//             expect(res.statusCode).toBe(200);
-//             expect(res.text).toBe("<h1>yes!</h1>");
-//         });
-// });
-
-test("POST /welcome sets req.session to true", () => {
-    const cookie = {};
-    cookieSession.mockSessionOnce(cookie);
+test("users who are logged out are redirected to the registration page when they attempt to go to the petition page", () => {
+    cookieSession.mockSession({
+        userId: null
+    });
     return supertest(app)
-        .post("/welcome")
+        .get("/petition")
         .then(res => {
-            expect(cookie.submitted).toBe(true);
+            expect(res.statusCode).toBe(302);
+            expect(res.headers.location).toBe("/register");
         });
 });
 
-// test("GET / home sends 200 status with submitted cookie", () => {
-//     cookieSession.mockSessionOnce({
-//         submitted: true
-//     });
-//     return supertest(app)
-//         .get("/home")
-//         .then(res => {
-//             expect(res.statusCode).toBe(200);
-//             expect(res.text).toBe("<h1>home</h1>");
-//         });
-// });
+test("Users who are logged in are redirected to the petition page when they attempt to go to the registration page", () => {
+    cookieSession.mockSession({
+        userId: 5
+    });
+    return supertest(app)
+        .get("/register")
+        .then(res => {
+            expect(res.statusCode).toBe(302);
+            expect(res.headers.location).toBe("/petition");
+        });
+});
+
+test("Users who are logged in are redirected to the petition page when they attempt to go to the login page", () => {
+    cookieSession.mockSession({
+        userId: 5
+    });
+    return supertest(app)
+        .get("/login")
+        .then(res => {
+            expect(res.statusCode).toBe(302);
+            expect(res.headers.location).toBe("/petition");
+        });
+});
+
+test("Users who are logged in and have signed the petition are redirected to the thank you page when they attempt to go to the petition page or submit a signature", () => {
+    cookieSession.mockSession({
+        userId: 5,
+        sigId: 4
+    });
+    return supertest(app)
+        .get("/petition")
+        .then(res => {
+            expect(res.statusCode).toBe(302);
+            expect(res.headers.location).toBe("/thanks");
+        });
+});
+
+test("Users who are logged in and have not signed the petition are redirected to the petition page when they attempt to go to the thank you page", () => {
+    cookieSession.mockSession({
+        userId: 5,
+        sigId: null
+    });
+    return supertest(app)
+        .get("/thanks")
+        .then(res => {
+            expect(res.statusCode).toBe(302);
+            expect(res.headers.location).toBe("/petition");
+        });
+});
+
+test("Users who are logged in and have not signed the petition are redirected to the petition page when they attempt to go to the signers page", () => {
+    cookieSession.mockSession({
+        userId: 5,
+        sigId: null
+    });
+    return supertest(app)
+        .get("/signers")
+        .then(res => {
+            expect(res.statusCode).toBe(302);
+            expect(res.headers.location).toBe("/petition");
+        });
+});

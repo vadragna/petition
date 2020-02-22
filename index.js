@@ -65,25 +65,7 @@ app.use(function(req, res, next) {
     }
 });
 
-app.get("/welcome", (req, res) => {
-    res.send("<h1>yes!</h1>");
-});
-
-app.post("/welcome", (req, res) => {
-    req.session.submitted = true;
-    res.redirect("/home");
-});
-
-app.get("/home", (req, res) => {
-    console.log("req.session", req.session);
-    if (!req.session.submitted) {
-        return res.redirect("/welcome");
-    }
-    res.send("<h1>home</h1>");
-});
-
 app.get("/", (req, res) => {
-    // req.session.allspice = "OK";
     res.redirect("/register");
 });
 
@@ -92,16 +74,13 @@ app.get("/petition", requireNoSignature, (req, res) => {
     if (req.session.sigId) {
         res.redirect("/thanks");
     } else {
-        // console.log("first, last, sig", first, last, sig);
-        // db.addDetails(firstname, lastname, sig).then(response =>
-        // req.session.sigId = response.rows[0].id)
         res.render("petition", {
             layout: "main"
         });
     }
 });
 
-app.get("/register", (req, res) => {
+app.get("/register", requireLoggedOutUser, (req, res) => {
     res.render("registration", {
         layout: "main"
     });
