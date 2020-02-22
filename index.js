@@ -2,7 +2,6 @@ var express = require("express");
 var app = express();
 exports.app = app;
 
-const bodyParser = require("body-parser");
 const {
     requireSignature,
     requireNoSignature,
@@ -145,6 +144,7 @@ app.post("/profile", (req, res) => {
             res.redirect("/petition");
         })
         .catch(err => {
+            console.log("err in post profile", err);
             res.render("profile", {
                 layout: "main",
                 errorMessage:
@@ -235,6 +235,7 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
             }
         })
         .catch(err => {
+            console.log("err in post login", err);
             res.render("login", {
                 layout: "main",
                 errorMessage: "wrong email or password"
