@@ -1,4 +1,4 @@
-console.log("test");
+console.log("test2");
 
 var canvas = $("#canvas");
 
@@ -18,6 +18,7 @@ canvas.on("mousedown", event => {
         }
     });
     canvas.on("mouseup", () => {
+        console.log("sig", sig);
         draw = false;
         $("input[name='sig']").val(canvas[0].toDataURL());
     });
@@ -28,17 +29,17 @@ $("#submit").on("click", () => {
     console.log("sig", sig);
     console.log('$("#message").html()', $("#message").html());
     var sig = $("input#sig").html();
-    // if (sig != "") {
-    var sigCode = $("input[name='sig']").val(canvas[0].toDataURL());
-    var first = $("#first").val();
-    var last = sigCode[0].value;
-    console.log(sig, "sig", "first", first, "last", last);
-    console.log("clicked on submit button");
-    // } else {
-    //     if ($("#message").html().length == 0) {
-    //         $("#message").append(
-    //             "<h5>You must sign to send your subscription!</h5>"
-    //         );
-    //     }
-    // }
+    if (sig != "") {
+        var sigCode = $("input[name='sig']").val(canvas[0].toDataURL());
+        var first = $("#first").val();
+        var last = sigCode[0].value;
+        console.log(sig, "sig", "first", first, "last", last);
+        console.log("clicked on submit button");
+    } else {
+        if ($("#message").html().length == 0) {
+            $("#message").append(
+                "<h5>You must sign to send your subscription!</h5>"
+            );
+        }
+    }
 });
