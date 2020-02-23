@@ -69,7 +69,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/petition", requireNoSignature, (req, res) => {
-    console.log("req.session in get petition", req.session);
     if (req.session.sigId) {
         res.redirect("/thanks");
     } else {
@@ -164,7 +163,6 @@ app.get("/profile/edit", (req, res) => {
 });
 
 app.post("/profile/edit", (req, res) => {
-    console.log("req in /profile/edit in post /profile/edit", req.body);
     let first = req.body.first;
     let last = req.body.second;
     let email = req.body.email;
@@ -211,9 +209,7 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
     console.log("req.body.email", req.body.email);
     getDataFromEmail(req.body.email)
         .then(results => {
-            console.log("results.rows in post login", results.rows[0]);
             req.session.sigId = results.rows[0].id;
-            console.log(req.session, "req.session in post login");
             if (results.rows[0].email == req.body.email) {
                 console.log("existing mail in db");
                 // hash(req.body.password).then(hashedPw => {
@@ -222,7 +218,6 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
                         console.log("match value: ", matchValue);
                         if (matchValue == true) {
                             req.session.userId = results.rows[0].user_id;
-                            console.log("request.session", req.session);
                             res.redirect("/petition");
                         } else {
                             res.render("login", {
@@ -245,7 +240,6 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
 
 app.get("/thanks", requireSignature, (req, res) => {
     let id = req.session.userId;
-    console.log("req.session in get thanks", req.session);
     getSigImg(id).then(results => {
         let nameAndSig = results.rows[0];
         res.render("thanks", {
@@ -258,7 +252,6 @@ app.get("/thanks", requireSignature, (req, res) => {
 app.get("/signers", requireSignature, (req, res) => {
     getSigners().then(results => {
         let subscribers = results.rows;
-        console.log("subscribers", subscribers);
         res.render("signers", {
             layout: "main",
             subscribers
@@ -285,8 +278,8 @@ app.post("/petition", (req, res) => {
     const { userId } = req.session;
     addSigner(req.body.sig, userId)
         .then(results => {
+            console.log("req.body.sig", req.body.sig);
             req.session.sigId = results.rows[0].id;
-            console.log("req session after post petition", req.session);
             res.redirect("/thanks");
         })
         .catch(err => console.log("error in post petition", err));
